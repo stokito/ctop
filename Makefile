@@ -33,4 +33,9 @@ release:
 	cd release; sha256sum --quiet --check sha256sums.txt && \
 	gh release create $(VERSION) -d -t v$(VERSION) *
 
+
+install: build
+	mkdir -p $(DESTDIR)/usr/bin/
+	mv ./ctop $(DESTDIR)/usr/bin/
+
 .PHONY: build
