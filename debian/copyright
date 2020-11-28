@@ -1,0 +1,7 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: ctop
+Source: https://github.com/bcicen/ctop
+
+Files: *
+Copyright: <2020> Bradley Cicenas <bradley@vektor.nyc>
+License: MIT
