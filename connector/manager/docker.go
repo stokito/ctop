@@ -133,12 +133,30 @@ func (dc *Docker) Inspect() (models.Meta, error) {
 	newMeta["ports"] = PortsFormat(insp.NetworkSettings.Ports)
 	newMeta["created"] = insp.Created.Format("Mon Jan 2 15:04:05 2006")
 	newMeta["health"] = insp.State.Health.Status
+	healthCheckOutput := dc.extractLastFailedHealthCheckOutput(insp)
+	if healthCheckOutput != "" {
+		newMeta["health_output"] = healthCheckOutput
+	}
 	for _, env := range insp.Config.Env {
 		newMeta["[ENV-VAR]"] = env
 	}
 	newMeta["state"] = insp.State.Status
 
 	return newMeta, nil
+}
+
+func (dc *Docker) extractLastFailedHealthCheckOutput(insp *api.Container) string {
+	// if container is unhealthy then Log will have few last stderr outputs
+	// https://docs.docker.com/engine/reference/builder/#healthcheck
+	// We need to find last output (e.g. from end) from check that failed
+	if insp.State.Health.Status == "unhealthy" {
+		for i := len(insp.State.Health.Log) - 1; i >= 0; i-- {
+			if insp.State.Health.Log[i].ExitCode > 0 {
+				return insp.State.Health.Log[i].Output
+			}
+		}
+	}
+	return ""
 }
 
 func (dc *Docker) Start() error {
